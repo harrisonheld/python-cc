@@ -1,0 +1,35 @@
+import ast
+import sys
+from instrumentor import ClauseInstrumentor
+from tracker import record, initialize_clauses
+from report import print_tcc_report
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: python3 clause_cover.py target.py")
+        sys.exit(1)
+
+    target_file = sys.argv[1]
+
+    with open(target_file, "r") as f:
+        source_code = f.read()
+
+    # get Abstract Syntax Tree from source code as string
+    tree = ast.parse(source_code)
+
+    # Instrument the AST
+    instrumentor = ClauseInstrumentor()
+    tree = instrumentor.visit(tree)
+    ast.fix_missing_locations(tree)
+    initialize_clauses(instrumentor.clause_ids, instrumentor.clause_text_by_id)
+
+    # Compile and execute instrumented code
+    exec_globals = {"record": record}
+    code = compile(tree, filename="<ast>", mode="exec")
+    exec(code, exec_globals)
+
+    # Print the clause coverage report
+    print_tcc_report()
+
+if __name__ == "__main__":
+    main()
