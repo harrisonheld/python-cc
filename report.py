@@ -1,18 +1,14 @@
-coverage = {}
+from typing import Dict
 
-def initialize(clause_ids, clause_dict=None):
-    if not clause_dict:
-        clause_dict = {}
-        
-    for clause_id in clause_ids:
-        if clause_id not in coverage:
-            coverage[clause_id] = {
-                "true": False,
-                "false": False,
-                "expr": clause_dict.get(clause_id, "<unknown>")
-            }
-        elif "expr" not in coverage[clause_id]:
-            coverage[clause_id]["expr"] = clause_dict.get(clause_id, "<unknown>")
+coverage: Dict[str, Dict[str, object]] = {}
+
+def initialize(clause_dict: Dict[str, str]) -> None:
+    for clause_id, expr_text in clause_dict.items():
+        coverage[clause_id] = {
+            "true": False,
+            "false": False,
+            "expr": expr_text
+        }
 
 
 def record(clause_id, value):

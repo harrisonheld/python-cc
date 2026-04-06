@@ -20,7 +20,7 @@ def main():
     instrumentor = ClauseInstrumentor()
     tree = instrumentor.visit(tree)
     ast.fix_missing_locations(tree)
-    report.initialize(instrumentor.clause_ids, instrumentor.clause_text_by_id)
+    report.initialize(instrumentor.clause_text_by_id)
 
     # Compile and execute instrumented code
     exec_globals = {"record": report.record}  # give the AST access to the "record" function

@@ -1,6 +1,6 @@
-def the_function(a: bool, b: bool):
-    if (a and b):
+def the_function(a: bool, b: int):
+    if (a and b > 3):
         pass
 
-the_function(False, False)
-the_function(False, True)
+the_function(False, 4)
+the_function(False, 2)
