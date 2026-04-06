@@ -71,3 +71,7 @@ def record_predicate(predicate_id: str, evaluate_predicate):
 
 def get_predicates() -> List[Predicate]:
     return [predicates_by_id[predicate_id] for predicate_id in sorted(predicates_by_id.keys())]
+
+
+def get_clause_text(clause_id: str) -> str:
+    return clause_text_by_id[clause_id]

@@ -37,12 +37,13 @@ def main():
 
     # print nicely formatted report
     for predicate in report.get_predicates():
-        print(f"Predicate: {predicate.predicate_id}")
-        print(f"  Expression: {predicate.expression_text}")
-        print(f"  Clauses: {', '.join(predicate.clause_ids)}")
-        print("  Observed combinations:")
+        print(f"Predicate ID: {predicate.predicate_id}")
+        print(f"Expression: {predicate.expression_text}")
+        clause_texts = [report.get_clause_text(clause_id) for clause_id in predicate.clause_ids]
+        print(f"Clauses: {', '.join(f"'{text}'" for text in clause_texts)}")
+        print("Observed combinations:")
         for combination in sorted(predicate.observed_combinations):
-            print(f"    {', '.join(combination)}")
+            print(f"* {', '.join(combination)}")
         print()
 
 if __name__ == "__main__":
