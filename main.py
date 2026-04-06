@@ -20,15 +20,23 @@ def main():
     instrumentor = ClauseInstrumentor()
     tree = instrumentor.visit(tree)
     ast.fix_missing_locations(tree)
-    report.initialize(instrumentor.clause_text_by_id)
+    report.initialize(
+        instrumentor.clause_text_by_id,
+        instrumentor.predicate_clause_ids,
+        instrumentor.predicate_text_by_id
+    )
 
     # Compile and execute instrumented code
-    exec_globals = {"record": report.record}  # give the AST access to the "record" function
+    # Setting exec_globals gives the AST access to these functions
+    exec_globals = {
+        "record_clause": report.record_clause,
+        "record_predicate": report.record_predicate
+    }
     code = compile(tree, filename="<ast>", mode="exec")
     exec(code, exec_globals)
 
-    # Print the clause coverage report
-    report.print_tcc_report()
+    # Print observed predicate combinations
+    report.print_predicate_combinations_report()
 
 if __name__ == "__main__":
     main()
