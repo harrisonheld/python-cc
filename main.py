@@ -2,7 +2,7 @@ import ast
 import sys
 from coverage_types import evaluate_predicates
 from instrumentor import ClauseInstrumentor
-import report
+from report import Report
 
 def main():
     if len(sys.argv) < 2:
@@ -19,6 +19,7 @@ def main():
 
     # Instrument the AST
     instrumentor = ClauseInstrumentor()
+    report = Report()
     tree = instrumentor.visit(tree)
     ast.fix_missing_locations(tree)
     report.initialize(
@@ -41,7 +42,8 @@ def main():
         print(f"Predicate ID: {predicate.predicate_id}")
         print(f"Expression: {predicate.expression_text}")
         clause_texts = [report.get_clause_text(clause_id) for clause_id in predicate.clause_ids]
-        print(f"Clauses: {', '.join(f"'{text}'" for text in clause_texts)}")
+        quoted_clause_texts = [f"'{text}'" for text in clause_texts]
+        print(f"Clauses: {', '.join(quoted_clause_texts)}")
         print("Observed executions:")
         for combination, result in sorted(predicate.observed_executions):
             print(f"* {', '.join(combination)} => {'True' if result else 'False'}")

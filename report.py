@@ -27,56 +27,54 @@ class ActivePredicateExecution:
     clause_values: Dict[str, str] = field(default_factory=dict)
 
 
-clause_text_by_id: Dict[str, str] = {}
-predicates_by_id: Dict[str, PredicateRecording] = {}
-active_predicates: List[ActivePredicateExecution] = []
+class Report:
+    def __init__(self) -> None:
+        self.clause_text_by_id: Dict[str, str] = {}
+        self.predicates_by_id: Dict[str, PredicateRecording] = {}
+        self.active_predicates: List[ActivePredicateExecution] = []
 
+    def initialize(
+        self,
+        clause_dict: Dict[str, str],
+        predicate_clause_dict: Dict[str, List[str]],
+        predicate_expr_dict: Dict[str, str]
+    ) -> None:
+        self.clause_text_by_id.clear()
+        self.predicates_by_id.clear()
+        self.active_predicates.clear()
 
-def initialize(
-    clause_dict: Dict[str, str],
-    predicate_clause_dict: Dict[str, List[str]],
-    predicate_expr_dict: Dict[str, str]
-) -> None:
-    clause_text_by_id.clear()
-    predicates_by_id.clear()
-    active_predicates.clear()
+        self.clause_text_by_id.update(clause_dict)
 
-    clause_text_by_id.update(clause_dict)
+        for predicate_id, clause_ids in predicate_clause_dict.items():
+            self.predicates_by_id[predicate_id] = PredicateRecording(
+                predicate_id=predicate_id,
+                expression_text=predicate_expr_dict[predicate_id],
+                clause_ids=clause_ids
+            )
 
-    for predicate_id, clause_ids in predicate_clause_dict.items():
-        predicates_by_id[predicate_id] = PredicateRecording(
-            predicate_id=predicate_id,
-            expression_text=predicate_expr_dict[predicate_id],
-            clause_ids=clause_ids
-        )
+    def record_clause(self, predicate_id: str, clause_id: str, value):
+        assert clause_id in self.clause_text_by_id
 
+        bool_value = bool(value)
 
-def record_clause(predicate_id: str, clause_id: str, value):
-    assert clause_id in clause_text_by_id
+        if self.active_predicates and self.active_predicates[-1].predicate_id == predicate_id:
+            self.active_predicates[-1].clause_values[clause_id] = "T" if bool_value else "F"
 
-    bool_value = bool(value)
+        return value
 
-    if active_predicates and active_predicates[-1].predicate_id == predicate_id:
-        active_predicates[-1].clause_values[clause_id] = "T" if bool_value else "F"
+    def record_predicate(self, predicate_id: str, evaluate_predicate):
+        self.active_predicates.append(ActivePredicateExecution(predicate_id=predicate_id))
+        result = None
+        try:
+            result = evaluate_predicate()
+            return result
+        finally:
+            completed = self.active_predicates.pop()
+            if result is not None:
+                self.predicates_by_id[completed.predicate_id].add_combination(completed.clause_values, result)
 
-    return value
+    def get_predicates(self) -> List[PredicateRecording]:
+        return [self.predicates_by_id[predicate_id] for predicate_id in sorted(self.predicates_by_id.keys())]
 
-
-def record_predicate(predicate_id: str, evaluate_predicate):
-    active_predicates.append(ActivePredicateExecution(predicate_id=predicate_id))
-    result = None
-    try:
-        result = evaluate_predicate()
-        return result
-    finally:
-        completed = active_predicates.pop()
-        if result is not None:
-            predicates_by_id[completed.predicate_id].add_combination(completed.clause_values, result)
-
-
-def get_predicates() -> List[PredicateRecording]:
-    return [predicates_by_id[predicate_id] for predicate_id in sorted(predicates_by_id.keys())]
-
-
-def get_clause_text(clause_id: str) -> str:
-    return clause_text_by_id[clause_id]
+    def get_clause_text(self, clause_id: str) -> str:
+        return self.clause_text_by_id[clause_id]
