@@ -1,5 +1,6 @@
 import ast
 import sys
+from coverage_types import evaluate_predicates
 from instrumentor import ClauseInstrumentor
 import report
 
@@ -41,10 +42,19 @@ def main():
         print(f"Expression: {predicate.expression_text}")
         clause_texts = [report.get_clause_text(clause_id) for clause_id in predicate.clause_ids]
         print(f"Clauses: {', '.join(f"'{text}'" for text in clause_texts)}")
-        print("Observed combinations:")
-        for combination in sorted(predicate.observed_combinations):
-            print(f"* {', '.join(combination)}")
+        print("Observed executions:")
+        for combination, result in sorted(predicate.observed_executions):
+            print(f"* {', '.join(combination)} => {'True' if result else 'False'}")
         print()
+
+    print("Coverage summary:")
+    for assessment in evaluate_predicates(report.get_predicates()):
+        print(
+            f"{assessment.predicate_id}: "
+            f"CC={'Yes' if assessment.cc else 'No'}, "
+            f"CACC={'Yes' if assessment.cacc else 'No'}, "
+            f"RACC={'Yes' if assessment.racc else 'No'}"
+        )
 
 if __name__ == "__main__":
     main()

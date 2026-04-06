@@ -1,13 +1,6 @@
-def the_function(a: bool, b: int):
-    if (a and b > 3):
+def the_function(a: bool):
+    if (a):
         pass
 
-    while (2 > 3):
-        pass
-
-    if (True):
-        pass
-
-the_function(False, 4)
-the_function(False, 2)
-the_function(True, 2)
+the_function(True)
+the_function(False)

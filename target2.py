@@ -1,13 +1,7 @@
-def the_function(a: int, b: bool) -> None:
-    if (a > 0 and b):
-        print('Howdy')
+def the_function(a: int, b: int):
+    if (a!=0 and b!=0):
+        pass
 
-    if (a == 10 and b):
-        print("Meowdy")
-
-
-the_function(5, True)
-the_function(10, True)
-the_function(-10, False)
-the_function(5, False)
-the_function(10, False)
+the_function(0, 4)
+the_function(1, 1)
+the_function(1, 0)

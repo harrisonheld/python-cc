@@ -9,10 +9,12 @@ class Predicate:
     expression_text: str
     clause_ids: List[str]
     observed_combinations: Set[Tuple[str, ...]] = field(default_factory=set)
+    observed_executions: List[Tuple[Tuple[str, ...], bool]] = field(default_factory=list)
 
-    def add_combination(self, clause_values: Dict[str, str]) -> None:
+    def add_combination(self, clause_values: Dict[str, str], result: bool) -> None:
         combination = tuple(clause_values.get(clause_id, "-") for clause_id in self.clause_ids)
         self.observed_combinations.add(combination)
+        self.observed_executions.append((combination, result))
 
 
 # This represents a Predicate that is ACTIVELY being evaluated
@@ -62,11 +64,14 @@ def record_clause(predicate_id: str, clause_id: str, value):
 
 def record_predicate(predicate_id: str, evaluate_predicate):
     active_predicates.append(ActivePredicateExecution(predicate_id=predicate_id))
+    result = None
     try:
-        return evaluate_predicate()
+        result = evaluate_predicate()
+        return result
     finally:
         completed = active_predicates.pop()
-        predicates_by_id[completed.predicate_id].add_combination(completed.clause_values)
+        if result is not None:
+            predicates_by_id[completed.predicate_id].add_combination(completed.clause_values, result)
 
 
 def get_predicates() -> List[Predicate]:
