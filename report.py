@@ -4,7 +4,7 @@ from typing import Dict, List, Set, Tuple
 
 # This will be used to represent a predicate and record all the seen combinations of its clauses
 @dataclass
-class Predicate:
+class PredicateRecording:
     predicate_id: str
     expression_text: str
     clause_ids: List[str]
@@ -28,7 +28,7 @@ class ActivePredicateExecution:
 
 
 clause_text_by_id: Dict[str, str] = {}
-predicates_by_id: Dict[str, Predicate] = {}
+predicates_by_id: Dict[str, PredicateRecording] = {}
 active_predicates: List[ActivePredicateExecution] = []
 
 
@@ -44,7 +44,7 @@ def initialize(
     clause_text_by_id.update(clause_dict)
 
     for predicate_id, clause_ids in predicate_clause_dict.items():
-        predicates_by_id[predicate_id] = Predicate(
+        predicates_by_id[predicate_id] = PredicateRecording(
             predicate_id=predicate_id,
             expression_text=predicate_expr_dict[predicate_id],
             clause_ids=clause_ids
@@ -74,7 +74,7 @@ def record_predicate(predicate_id: str, evaluate_predicate):
             predicates_by_id[completed.predicate_id].add_combination(completed.clause_values, result)
 
 
-def get_predicates() -> List[Predicate]:
+def get_predicates() -> List[PredicateRecording]:
     return [predicates_by_id[predicate_id] for predicate_id in sorted(predicates_by_id.keys())]
 
 

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from itertools import product
 from typing import Iterable, List
 
-from report import Predicate
+from report import PredicateRecording
 
 
 @dataclass
@@ -17,13 +17,13 @@ def _all_full_combinations(clause_count: int) -> set[tuple[str, ...]]:
 	return set(product(("T", "F"), repeat=clause_count))
 
 
-def satisfies_cc(predicate: Predicate) -> bool:
+def satisfies_cc(predicate: PredicateRecording) -> bool:
 	expected = _all_full_combinations(len(predicate.clause_ids))
 	seen = {combination for combination in predicate.observed_combinations if "-" not in combination}
 	return expected.issubset(seen)
 
 
-def _has_cacc_pair(predicate: Predicate, major_clause_index: int) -> bool:
+def _has_cacc_pair(predicate: PredicateRecording, major_clause_index: int) -> bool:
 	for combination_a, result_a in predicate.observed_executions:
 		value_a = combination_a[major_clause_index]
 		if value_a not in {"T", "F"}:
@@ -43,7 +43,7 @@ def _has_cacc_pair(predicate: Predicate, major_clause_index: int) -> bool:
 	return False
 
 
-def _has_racc_pair(predicate: Predicate, major_clause_index: int) -> bool:
+def _has_racc_pair(predicate: PredicateRecording, major_clause_index: int) -> bool:
 	for combination_a, result_a in predicate.observed_executions:
 		value_a = combination_a[major_clause_index]
 		if value_a not in {"T", "F"}:
@@ -74,15 +74,15 @@ def _has_racc_pair(predicate: Predicate, major_clause_index: int) -> bool:
 	return False
 
 
-def satisfies_cacc(predicate: Predicate) -> bool:
+def satisfies_cacc(predicate: PredicateRecording) -> bool:
 	return all(_has_cacc_pair(predicate, i) for i in range(len(predicate.clause_ids)))
 
 
-def satisfies_racc(predicate: Predicate) -> bool:
+def satisfies_racc(predicate: PredicateRecording) -> bool:
 	return all(_has_racc_pair(predicate, i) for i in range(len(predicate.clause_ids)))
 
 
-def evaluate_predicate(predicate: Predicate) -> CoverageAssessment:
+def evaluate_predicate(predicate: PredicateRecording) -> CoverageAssessment:
 	return CoverageAssessment(
 		predicate_id=predicate.predicate_id,
 		cc=satisfies_cc(predicate),
@@ -91,6 +91,6 @@ def evaluate_predicate(predicate: Predicate) -> CoverageAssessment:
 	)
 
 
-def evaluate_predicates(predicates: Iterable[Predicate]) -> List[CoverageAssessment]:
+def evaluate_predicates(predicates: Iterable[PredicateRecording]) -> List[CoverageAssessment]:
 	return [evaluate_predicate(predicate) for predicate in predicates]
 
