@@ -1,6 +1,6 @@
 from typing import Dict
 
-class Clause:
+class ClauseEvaluation:
     def __init__(self, expr: str):
         self.expr = expr
         self.true: bool = False
@@ -14,12 +14,12 @@ class Clause:
         return value
 
 
-coverage: Dict[str, Clause] = {}
+coverage: Dict[str, ClauseEvaluation] = {}
 
 
 def initialize(clause_dict: Dict[str, str]) -> None:
     for clause_id, expr_text in clause_dict.items():
-        coverage[clause_id] = Clause(expr_text)
+        coverage[clause_id] = ClauseEvaluation(expr_text)
 
 
 def record(clause_id: str, value: bool) -> bool:
