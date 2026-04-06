@@ -31,14 +31,43 @@ class ClauseInstrumentor(ast.NodeTransformer):
     # visit_predicate will visit the thing that is inside if(...) and while(...) statements
     # it takes in the expression (...), and returns an expression with instrumentation added
     def visit_predicate(self, expression: ast.expr) -> ast.expr:
-        self.clause_count += 1
-        clause_id = "clause" + str(self.clause_count)
-        self.clause_ids.append(clause_id)
-        # ast.unparse returns source code
-        self.clause_text_by_id[clause_id] = ast.unparse(expression)
+        
+        # BoolOp: Recurse
+        # Examples:  
+        #   a and b
+        #   a or b
+        if isinstance(expression, ast.BoolOp):
+            expression.values = [self.visit_predicate(v) for v in expression.values]
+            return expression
+        
+        # UnaryOp: recurse
+        # Examples:
+        #  not x
+        #  not (a or b)
+        elif isinstance(expression, ast.UnaryOp) and isinstance(expression.op, ast.Not):
+            expression.operand = self.visit_predicate(expression.operand)
+            return expression
 
-        return ast.Call(
-            func=ast.Name(id="record", ctx=ast.Load()),
-            args=[ast.Constant(value=clause_id), expression],
-            keywords=[]
+        # LEAF clause. Instrument it
+        # Examples:
+        #   True
+        #   a > 3
+        #   a
+        elif isinstance(expression, (ast.Name, ast.Constant, ast.Compare)):
+            self.clause_count += 1
+            clause_id = "clause" + str(self.clause_count)
+            self.clause_ids.append(clause_id)
+            self.clause_text_by_id[clause_id] = ast.unparse(expression)
+            return ast.Call(
+                func=ast.Name(id="record", ctx=ast.Load()),
+                args=[ast.Constant(value=clause_id), expression],
+                keywords=[]
         )
+
+        # Fallback: anything else, leave unchanged
+        else:
+            print('WARNING: not sure what to do with this kind of node')
+            print(f"Type: {type(expression)}")
+            print(f"Expression: {ast.unparse(expression)}")
+            print()
+            return expression
