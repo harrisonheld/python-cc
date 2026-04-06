@@ -1,3 +1,9 @@
+# Predicates and Clauses
+Predicates are the contents of if(...) and while(...) statements.
+For `if (a > 3 and b)`, `a > 3 and b` is the predicate.
+
+Clauses are the most indivisible units which evaluate to True or False. For the above example `a > 3` and `b` would be clauses.
+
 # AST Compiling
 Try `python3 cruft/ast_testing.py` to see what the AST looks like for some expressions.
 
