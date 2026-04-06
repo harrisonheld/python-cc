@@ -1,8 +1,7 @@
 import ast
 import sys
 from instrumentor import ClauseInstrumentor
-from tracker import record, initialize_clauses
-from report import print_tcc_report
+import report
 
 def main():
     if len(sys.argv) < 2:
@@ -21,15 +20,15 @@ def main():
     instrumentor = ClauseInstrumentor()
     tree = instrumentor.visit(tree)
     ast.fix_missing_locations(tree)
-    initialize_clauses(instrumentor.clause_ids, instrumentor.clause_text_by_id)
+    report.initialize(instrumentor.clause_ids, instrumentor.clause_text_by_id)
 
     # Compile and execute instrumented code
-    exec_globals = {"record": record}
+    exec_globals = {"record": report.record}  # give the AST access to the "record" function
     code = compile(tree, filename="<ast>", mode="exec")
     exec(code, exec_globals)
 
     # Print the clause coverage report
-    print_tcc_report()
+    report.print_tcc_report()
 
 if __name__ == "__main__":
     main()
