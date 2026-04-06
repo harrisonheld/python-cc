@@ -35,8 +35,15 @@ def main():
     code = compile(tree, filename="<ast>", mode="exec")
     exec(code, exec_globals)
 
-    # Print observed predicate combinations
-    report.print_predicate_combinations_report()
+    # print nicely formatted report
+    for predicate in report.get_predicates():
+        print(f"Predicate: {predicate.predicate_id}")
+        print(f"  Expression: {predicate.expression_text}")
+        print(f"  Clauses: {', '.join(predicate.clause_ids)}")
+        print("  Observed combinations:")
+        for combination in sorted(predicate.observed_combinations):
+            print(f"    {', '.join(combination)}")
+        print()
 
 if __name__ == "__main__":
     main()

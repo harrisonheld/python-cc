@@ -15,4 +15,4 @@ if(a and b):
     pass
 ```
 
-b will never be evaulated because a is False, which means the whole and expression is gauranteed to be False anyway. So Python never bothers to execute b. Similiar behavior exists for 'or'. In these cases, b will never be observed to be True.
+b will never be evaulated because a is False, which means the whole and expression is gauranteed to be False. Similiar behavior exists for 'or'. If a clause is never executed, we will denote that with `-` in the report.
