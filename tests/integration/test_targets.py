@@ -27,7 +27,7 @@ class IntegrationTargetsTests(unittest.TestCase):
         )
         self.assertIn("Coverage summary:", completed.stdout)
         self.assertIn("Predicate ID: predicate1", completed.stdout)
-        self.assertIn("Observed executions:", completed.stdout)
+        self.assertIn("Observed executions (clause values -> predicate result):", completed.stdout)
         return completed.stdout
 
     def test_targets_1_through_6(self):
@@ -35,32 +35,32 @@ class IntegrationTargetsTests(unittest.TestCase):
             "target1.py": {
                 "expression": "Expression: a",
                 "summary": "predicate1: CC=Yes, CACC=Yes, RACC=Yes",
-                "execution": "* F => False",
+                "execution": "1. [F] -> False",
             },
             "target2.py": {
                 "expression": "Expression: a != 0 and b != 0",
                 "summary": "predicate1: CC=No, CACC=Yes, RACC=No",
-                "execution": "* F, - => False",
+                "execution": "1. [F, -] -> False",
             },
             "target3.py": {
                 "expression": "Expression: a and b and c",
                 "summary": "predicate1: CC=No, CACC=No, RACC=No",
-                "execution": "* F, -, - => False",
+                "execution": "1. [F, -, -] -> False",
             },
             "target4.py": {
                 "expression": "Expression: a or b",
                 "summary": "predicate1: CC=No, CACC=Yes, RACC=No",
-                "execution": "* T, - => True",
+                "execution": "3. [T, -] -> True",
             },
             "target5.py": {
                 "expression": "Expression: not x",
                 "summary": "predicate1: CC=Yes, CACC=Yes, RACC=Yes",
-                "execution": "* T => False",
+                "execution": "2. [T] -> False",
             },
             "target6.py": {
                 "expression": "Expression: a and b or c",
                 "summary": "predicate1: CC=No, CACC=Yes, RACC=No",
-                "execution": "* T, T, - => True",
+                "execution": "4. [T, T, -] -> True",
             },
         }
 
@@ -84,7 +84,7 @@ class IntegrationTargetsTests(unittest.TestCase):
                 self.assertIn(expected_present, output)
 
                 summary_line = next(
-                    line for line in output.splitlines() if line.startswith("predicate1:")
+                    line.strip() for line in output.splitlines() if line.strip().startswith("predicate1:")
                 )
                 summary_values = summary_line.split(": ", 1)[1]
                 reported_modes = {part.split("=", 1)[0] for part in summary_values.split(", ")}

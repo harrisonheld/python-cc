@@ -84,19 +84,19 @@ def main(argv=None):
     exec(code, exec_globals)
 
     # print nicely formatted report
-    for predicate in report.get_predicates():
+    predicates = report.get_predicates()
+    assessments = evaluate_predicates(predicates)
+
+    for predicate, assessment in zip(predicates, assessments):
         print(f"Predicate ID: {predicate.predicate_id}")
         print(f"Expression: {predicate.expression_text}")
         clause_texts = [report.get_clause_text(clause_id) for clause_id in predicate.clause_ids]
         quoted_clause_texts = [f"'{text}'" for text in clause_texts]
-        print(f"Clauses: {', '.join(quoted_clause_texts)}")
-        print("Observed executions:")
-        for combination, result in sorted(predicate.observed_executions):
-            print(f"* {', '.join(combination)} => {'True' if result else 'False'}")
-        print()
-
-    print("Coverage summary:")
-    for assessment in evaluate_predicates(report.get_predicates()):
+        print(f"Clauses: [{', '.join(quoted_clause_texts)}]")
+        print("Observed executions (clause values -> predicate result):")
+        for index, (combination, result) in enumerate(sorted(predicate.observed_executions), start=1):
+            print(f"  {index}. [{', '.join(combination)}] -> {'True' if result else 'False'}")
+        print("Coverage summary:")
         coverage_parts = []
         if "CC" in modes:
             coverage_parts.append(f"CC={'Yes' if assessment.cc else 'No'}")
@@ -105,10 +105,8 @@ def main(argv=None):
         if "RACC" in modes:
             coverage_parts.append(f"RACC={'Yes' if assessment.racc else 'No'}")
 
-        print(
-            f"{assessment.predicate_id}: "
-            f"{', '.join(coverage_parts)}"
-        )
+        print(f"  {assessment.predicate_id}: {', '.join(coverage_parts)}")
+        print()
 
 if __name__ == "__main__":
     main()
