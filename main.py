@@ -1,15 +1,61 @@
+import argparse
 import ast
-import sys
 from coverage_types import evaluate_predicates
 from instrumentor import ClauseInstrumentor
 from report import Report
 
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: python3 clause_cover.py target.py")
-        sys.exit(1)
 
-    target_file = sys.argv[1]
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Instrument predicates and report logic coverage.",
+        epilog=(
+            "Coverage modes:\n"
+            "  --cc    Total Clause Coverage (CC): all full T/F clause combinations are observed.\n"
+            "  --cacc  Correlated Active Clause Coverage (CACC): for each major clause,\n"
+            "          toggling it can change predicate outcome (minor clauses may differ).\n"
+            "  --racc  Restricted Active Clause Coverage (RACC): like CACC, but minor\n"
+            "          clauses must remain the same between the witness pair.\n\n"
+            "If no coverage mode flag is provided, all three (CC, CACC, RACC) are reported."
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    parser.add_argument("target_file", help="Python file to instrument and execute")
+    parser.add_argument(
+        "--cc",
+        action="store_true",
+        help="Report only Total Clause Coverage (CC)",
+    )
+    parser.add_argument(
+        "--cacc",
+        action="store_true",
+        help="Report only Correlated Active Clause Coverage (CACC)",
+    )
+    parser.add_argument(
+        "--racc",
+        action="store_true",
+        help="Report only Restricted Active Clause Coverage (RACC)",
+    )
+    return parser.parse_args(argv)
+
+
+def selected_modes(args) -> list[str]:
+    modes = []
+    if args.cc:
+        modes.append("CC")
+    if args.cacc:
+        modes.append("CACC")
+    if args.racc:
+        modes.append("RACC")
+
+    if not modes:
+        return ["CC", "CACC", "RACC"]
+    return modes
+
+
+def main(argv=None):
+    args = parse_args(argv)
+    target_file = args.target_file
+    modes = selected_modes(args)
 
     with open(target_file, "r") as f:
         source_code = f.read()
@@ -51,11 +97,17 @@ def main():
 
     print("Coverage summary:")
     for assessment in evaluate_predicates(report.get_predicates()):
+        coverage_parts = []
+        if "CC" in modes:
+            coverage_parts.append(f"CC={'Yes' if assessment.cc else 'No'}")
+        if "CACC" in modes:
+            coverage_parts.append(f"CACC={'Yes' if assessment.cacc else 'No'}")
+        if "RACC" in modes:
+            coverage_parts.append(f"RACC={'Yes' if assessment.racc else 'No'}")
+
         print(
             f"{assessment.predicate_id}: "
-            f"CC={'Yes' if assessment.cc else 'No'}, "
-            f"CACC={'Yes' if assessment.cacc else 'No'}, "
-            f"RACC={'Yes' if assessment.racc else 'No'}"
+            f"{', '.join(coverage_parts)}"
         )
 
 if __name__ == "__main__":

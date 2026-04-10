@@ -9,9 +9,12 @@ MAIN_FILE = PROJECT_ROOT / "main.py"
 
 
 class IntegrationTargetsTests(unittest.TestCase):
-    def run_target(self, target_filename: str) -> str:
+    def run_target(self, target_filename: str, extra_args=None) -> str:
+        if extra_args is None:
+            extra_args = []
+
         completed = subprocess.run(
-            [sys.executable, str(MAIN_FILE), target_filename],
+            [sys.executable, str(MAIN_FILE), target_filename, *extra_args],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
@@ -67,6 +70,25 @@ class IntegrationTargetsTests(unittest.TestCase):
                 self.assertIn(checks["expression"], output)
                 self.assertIn(checks["summary"], output)
                 self.assertIn(checks["execution"], output)
+
+    def test_coverage_mode_flags_filter_summary_fields(self):
+        flag_expectations = [
+            ("--cc", "CC", "CC=No"),
+            ("--cacc", "CACC", "CACC=Yes"),
+            ("--racc", "RACC", "RACC=No"),
+        ]
+
+        for flag, expected_mode, expected_present in flag_expectations:
+            with self.subTest(flag=flag):
+                output = self.run_target("target2.py", [flag])
+                self.assertIn(expected_present, output)
+
+                summary_line = next(
+                    line for line in output.splitlines() if line.startswith("predicate1:")
+                )
+                summary_values = summary_line.split(": ", 1)[1]
+                reported_modes = {part.split("=", 1)[0] for part in summary_values.split(", ")}
+                self.assertEqual({expected_mode}, reported_modes)
 
 
 if __name__ == "__main__":
