@@ -8,15 +8,6 @@ from report import Report
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         description="Reports clause coverage of the given python file.",
-        epilog=(
-            "Coverage modes:\n"
-            "  --cc    Total Clause Coverage (CC): all full T/F clause combinations are observed.\n"
-            "  --cacc  Correlated Active Clause Coverage (CACC): for each major clause,\n"
-            "          toggling it can change predicate outcome (minor clauses may differ).\n"
-            "  --racc  Restricted Active Clause Coverage (RACC): like CACC, but minor\n"
-            "          clauses must remain the same between the witness pair.\n\n"
-            "If no coverage mode flag is provided, all three (CC, CACC, RACC) are reported."
-        ),
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument("target_file", help="Python file to instrument and execute")
