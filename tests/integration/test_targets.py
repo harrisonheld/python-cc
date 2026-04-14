@@ -90,6 +90,25 @@ class IntegrationTargetsTests(unittest.TestCase):
                 reported_modes = {part.split("=", 1)[0] for part in summary_values.split(", ")}
                 self.assertEqual({expected_mode}, reported_modes)
 
+    def test_ast_flag_prints_parsed_ast(self):
+        completed = subprocess.run(
+            [sys.executable, str(MAIN_FILE), "target2.py", "--ast"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        self.assertEqual(
+            0,
+            completed.returncode,
+            msg=f"main.py --ast failed:\nSTDOUT:\n{completed.stdout}\nSTDERR:\n{completed.stderr}",
+        )
+        self.assertIn("Module(", completed.stdout)
+        self.assertIn("FunctionDef(", completed.stdout)
+        self.assertIn("arguments(", completed.stdout)
+        self.assertNotIn("Coverage summary:", completed.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

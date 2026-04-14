@@ -7,7 +7,7 @@ from report import Report
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
-        description="Instrument predicates and report logic coverage.",
+        description="Reports clause coverage of the given python file.",
         epilog=(
             "Coverage modes:\n"
             "  --cc    Total Clause Coverage (CC): all full T/F clause combinations are observed.\n"
@@ -20,20 +20,31 @@ def parse_args(argv=None):
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument("target_file", help="Python file to instrument and execute")
-    parser.add_argument(
+    coverage_modes = parser.add_argument_group("coverage modes")
+    coverage_modes.add_argument(
+        "--all",
+        action="store_true",
+        help="(Default) Report all of CC, CACC, and RACC.",
+    )
+    coverage_modes.add_argument(
         "--cc",
         action="store_true",
-        help="Report only Total Clause Coverage (CC)",
+        help="Report will include Total Clause Coverage (CC)",
     )
-    parser.add_argument(
+    coverage_modes.add_argument(
         "--cacc",
         action="store_true",
-        help="Report only Correlated Active Clause Coverage (CACC)",
+        help="Report will include Correlated Active Clause Coverage (CACC)",
     )
-    parser.add_argument(
+    coverage_modes.add_argument(
         "--racc",
         action="store_true",
-        help="Report only Restricted Active Clause Coverage (RACC)",
+        help="Report will include Restricted Active Clause Coverage (RACC)",
+    )
+    parser.add_argument(
+        "--ast",
+        action="store_true",
+        help="Print the parsed AST for the target file and exit.",
     )
     return parser.parse_args(argv)
 
@@ -47,7 +58,7 @@ def selected_modes(args) -> list[str]:
     if args.racc:
         modes.append("RACC")
 
-    if not modes:
+    if not modes or args.all:
         return ["CC", "CACC", "RACC"]
     return modes
 
@@ -62,6 +73,10 @@ def main(argv=None):
 
     # get Abstract Syntax Tree from source code as string
     tree = ast.parse(source_code)
+
+    if args.ast:
+        print(ast.dump(tree, indent=2, include_attributes=False))
+        return
 
     # Instrument the AST
     instrumentor = ClauseInstrumentor()
